@@ -13,8 +13,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   // --- CẤU HÌNH ---
   // Thay API Key của bạn vào đây
-  static const String _apiKey = 'AIzaSyD2sOU2dJVDWjsP2tmbXaSmkA6mow3A8wc'; 
-  
+  static const String _apiKey = 'AIzaSyCH-xhKHeMq__xN9PUZjVXFOkKuuNaKqXc';
+
   // Model Name: Sử dụng gemini-1.5-flash (bản 2.5 chưa khả dụng public)
   static const String _modelName = 'gemini-1.5-flash';
 
@@ -23,7 +23,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final ChatUser _geminiUser = ChatUser(
     id: '2',
     firstName: 'AI Tutor',
-    profileImage: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', // Logo Gemini chính gốc
+    profileImage:
+        'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', // Logo Gemini chính gốc
   );
 
   List<ChatMessage> _messages = [];
@@ -126,11 +127,12 @@ Bạn muốn bắt đầu từ đâu? 😊''',
       }
     } catch (e) {
       debugPrint("Lỗi Gemini: $e");
-      
+
       ChatMessage errorMessage = ChatMessage(
         user: _geminiUser,
         createdAt: DateTime.now(),
-        text: "Xin lỗi, tôi đang gặp chút vấn đề kết nối. Bạn vui lòng kiểm tra mạng hoặc hỏi lại sau nhé! 😓",
+        text:
+            "Xin lỗi, tôi đang gặp chút vấn đề kết nối. Bạn vui lòng kiểm tra mạng hoặc hỏi lại sau nhé! 😓",
       );
 
       setState(() {
@@ -149,7 +151,9 @@ Bạn muốn bắt đầu từ đâu? 😊''',
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Bắt đầu lại?'),
-        content: const Text('Hội thoại hiện tại sẽ bị xóa. Bạn có chắc chắn không?'),
+        content: const Text(
+          'Hội thoại hiện tại sẽ bị xóa. Bạn có chắc chắn không?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -199,7 +203,7 @@ Bạn muốn bắt đầu từ đâu? 😊''',
         children: [
           // Gợi ý nhanh
           _buildQuickReplies(),
-          
+
           // Khung chat
           Expanded(
             child: DashChat(
@@ -212,7 +216,10 @@ Bạn muốn bắt đầu từ đâu? 😊''',
                   hintText: 'Ask me anything about English...',
                   filled: true,
                   fillColor: Colors.grey[100],
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -220,7 +227,10 @@ Bạn muốn bắt đầu từ đâu? 😊''',
                 ),
                 alwaysShowSend: true,
                 sendButtonBuilder: (onSend) => IconButton(
-                  icon: const Icon(Icons.send_rounded, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.send_rounded,
+                    color: AppColors.primary,
+                  ),
                   onPressed: onSend,
                 ),
               ),
@@ -259,10 +269,15 @@ Bạn muốn bắt đầu từ đâu? 😊''',
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           return ActionChip(
-            label: Text(suggestions[index], style: const TextStyle(fontSize: 12, color: AppColors.primary)),
+            label: Text(
+              suggestions[index],
+              style: const TextStyle(fontSize: 12, color: AppColors.primary),
+            ),
             backgroundColor: AppColors.primary.withOpacity(0.1),
             side: BorderSide.none,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             onPressed: () {
               final message = ChatMessage(
                 user: _currentUser,
@@ -287,9 +302,9 @@ Widget _buildAvatar(ChatUser user, Function? onPress, Function? onLongPress) {
       backgroundColor: Colors.transparent,
       backgroundImage: NetworkImage(user.profileImage ?? ''),
       onBackgroundImageError: (_, __) {},
-      child: user.profileImage == null 
-        ? const Icon(Icons.smart_toy_rounded, color: AppColors.primary) 
-        : null,
+      child: user.profileImage == null
+          ? const Icon(Icons.smart_toy_rounded, color: AppColors.primary)
+          : null,
     ),
   );
 }
