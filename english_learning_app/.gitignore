@@ -191,3 +191,5 @@ firebase.json
 # Logs
 logs/
 *.log.*
+
+config/serviceAccountKey.json
