@@ -24,7 +24,8 @@ app.use((req, res, next) => {
 // ====== IMPORT ROUTES ======
 const topicRoutes = require('./routes/topic.routes.js');
 const authRoute = require('./routes/auth');
-const userRoute = require('./routes/user'); // <--- user profile
+const userRoute = require('./routes/user');
+const writingRoute = require('./routes/writing');  // <--- user profile
 
 // ====== CONNECT MONGODB ======
 const connectDB = async () => {
@@ -96,7 +97,7 @@ app.get('/', (req, res) => {
 app.use('/api', topicRoutes);
 app.use('/api/auth', authRoute);
 app.use('/api/user', userRoute);
-
+app.use('/api/writing', writingRoute);
 // ====== 404 HANDLER ======
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
@@ -130,7 +131,7 @@ app.use((err, req, res, next) => {
 });
 
 // ====== START SERVER ======
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Access URLs:`);
