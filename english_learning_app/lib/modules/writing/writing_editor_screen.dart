@@ -3,10 +3,14 @@ import '../../config/app_colors.dart';
 import '../../services/writing_service.dart';
 
 class WritingEditorScreen extends StatefulWidget {
-  final Map<String, dynamic>? existingWriting; // Bài cũ để sửa
-  final String? initialType; // Loại bài (Email, Essay...)
+  final Map<String, dynamic>? existingWriting;
+  final String? initialType;
 
-  const WritingEditorScreen({super.key, this.existingWriting, this.initialType});
+  const WritingEditorScreen({
+    super.key,
+    this.existingWriting,
+    this.initialType,
+  });
 
   @override
   State<WritingEditorScreen> createState() => _WritingEditorScreenState();
@@ -16,22 +20,21 @@ class _WritingEditorScreenState extends State<WritingEditorScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final WritingService _service = WritingService();
-  
+
   bool _isSaving = false;
-  int _wordCount = 0;
   String _currentType = "Free Write";
+  int _wordCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // Load dữ liệu cũ nếu có
     if (widget.existingWriting != null) {
-      _titleController.text = widget.existingWriting!['title'];
-      _contentController.text = widget.existingWriting!['content'];
+      _titleController.text = widget.existingWriting!['title'] ?? '';
+      _contentController.text = widget.existingWriting!['content'] ?? '';
       _currentType = widget.existingWriting!['type'] ?? "Free Write";
       _updateWordCount(_contentController.text);
-    } else {
-      if (widget.initialType != null) _currentType = widget.initialType!;
+    } else if (widget.initialType != null) {
+      _currentType = widget.initialType!;
     }
   }
 
@@ -41,31 +44,43 @@ class _WritingEditorScreenState extends State<WritingEditorScreen> {
     });
   }
 
-  void _save() async {
+  Future<void> _save() async {
+    if (_isSaving) return;
+
     if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Title cannot be empty")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Title cannot be empty")),
+      );
       return;
     }
 
     setState(() => _isSaving = true);
-    
+
+    // Gọi hàm saveWriting (đã khớp với service)
     final success = await _service.saveWriting(
-      id: widget.existingWriting?['_id'], // Gửi ID nếu đang sửa
+      id: widget.existingWriting?['_id'],
       title: _titleController.text,
       content: _contentController.text,
       type: _currentType,
     );
 
+    if (!mounted) return;
     setState(() => _isSaving = false);
 
-    if (success && mounted) {
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Saved successfully!"), backgroundColor: Colors.green)
+        const SnackBar(
+          content: Text("Saved successfully"),
+          backgroundColor: Colors.green,
+        ),
       );
-      Navigator.pop(context, true); // Trả về true để reload list
-    } else if (mounted) {
+      Navigator.pop(context, true); 
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to save. Check connection."), backgroundColor: Colors.red)
+        const SnackBar(
+          content: Text("Save failed. Check server connection."),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -75,49 +90,40 @@ class _WritingEditorScreenState extends State<WritingEditorScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: const BackButton(color: Colors.black),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Writing Editor", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(_currentType, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text("Writing Editor", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+            Text(_currentType, style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: const BackButton(color: Colors.black),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TextButton.icon(
-              onPressed: _isSaving ? null : _save,
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
-              ),
-              icon: _isSaving 
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
-                  : const Icon(Icons.check, size: 20, color: AppColors.primary),
-              label: Text("Save", style: TextStyle(fontWeight: FontWeight.bold, color: _isSaving ? Colors.grey : AppColors.primary)),
-            ),
+          IconButton(
+            onPressed: _isSaving ? null : _save,
+            icon: _isSaving
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.check, color: AppColors.primary),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
-                hintText: "Title...",
+                hintText: "Title",
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.grey),
               ),
             ),
             const Divider(),
-            
-            // Toolbar
+             // Toolbar đếm từ
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
@@ -125,15 +131,10 @@ class _WritingEditorScreenState extends State<WritingEditorScreen> {
                   Icon(Icons.notes, size: 18, color: Colors.grey[600]),
                   const SizedBox(width: 6),
                   Text("$_wordCount words", style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  IconButton(icon: const Icon(Icons.format_bold), onPressed: () {}, color: Colors.grey),
-                  IconButton(icon: const Icon(Icons.format_italic), onPressed: () {}, color: Colors.grey),
                 ],
               ),
             ),
             const Divider(),
-            
-            // Editor Area
             Expanded(
               child: TextField(
                 controller: _contentController,
@@ -141,9 +142,8 @@ class _WritingEditorScreenState extends State<WritingEditorScreen> {
                 maxLines: null,
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
-                style: const TextStyle(fontSize: 16, height: 1.5),
                 decoration: const InputDecoration(
-                  hintText: "Start writing your masterpiece here...",
+                  hintText: "Start writing here...",
                   border: InputBorder.none,
                 ),
               ),

@@ -54,6 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (user != null && mounted) {
+      final token = await user.getIdToken();
+
+      print("🔥 FIREBASE ID TOKEN:\n$token");
+
       // --- SỬA Ở ĐÂY: Chuyển sang Onboarding trước ---
       Navigator.pushNamedAndRemoveUntil(context, AppRoutes.onboarding, (route) => false);
       

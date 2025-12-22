@@ -3,7 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-dotenv.config();
+
+dotenv.config(); // 🔥 PHẢI GỌI SỚM
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 
 // ====== LOGGING MIDDLEWARE ======
@@ -25,19 +27,39 @@ app.use((req, res, next) => {
 const topicRoutes = require('./routes/topic.routes.js');
 const authRoute = require('./routes/auth');
 const userRoute = require('./routes/user');
-const writingRoute = require('./routes/writing');  // <--- user profile
+const writingRoute = require('./routes/writing');
 
 // ====== CONNECT MONGODB ======
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/grammar-app');
+    console.log('⏳ Connecting to MongoDB...');
+    console.log('🔎 URI:', process.env.MONGODB_URI ? 'FOUND' : '❌ NOT FOUND');
+
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // 🔥 CHỐNG TREO
+    });
+
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     process.exit(1);
   }
 };
+
 connectDB();
+
+// 🔥 ADDED: BẮT TRẠNG THÁI MONGO RUNTIME
+mongoose.connection.on('connected', () => {
+  console.log('🟢 MongoDB READY');
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.error('🔴 MongoDB DISCONNECTED');
+});
+
+mongoose.connection.on('error', err => {
+  console.error('❌ MongoDB RUNTIME ERROR:', err.message);
+});
 
 // ====== TEST & HEALTH ENDPOINTS ======
 app.get('/api/test-connection', (req, res) => {
@@ -73,7 +95,8 @@ app.get('/api/health', (req, res) => {
       '/api/test-connection',
       '/api/simple-progress',
       '/api/auth',
-      '/api/user'
+      '/api/user',
+      '/api/writing'
     ]
   });
 });
@@ -88,7 +111,8 @@ app.get('/', (req, res) => {
       testConnection: '/api/test-connection',
       simpleProgress: '/api/simple-progress',
       auth: '/api/auth',
-      user: '/api/user'
+      user: '/api/user',
+      writing: '/api/writing'
     }
   });
 });
@@ -98,25 +122,13 @@ app.use('/api', topicRoutes);
 app.use('/api/auth', authRoute);
 app.use('/api/user', userRoute);
 app.use('/api/writing', writingRoute);
+
 // ====== 404 HANDLER ======
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ 
     error: 'Route not found',
-    requested: `${req.method} ${req.originalUrl}`,
-    availableEndpoints: [
-      'GET /api/health',
-      'GET /api/topics',
-      'GET /api/topics/progress',
-      'GET /api/test-connection',
-      'GET /api/simple-progress',
-      'POST /api/topics',
-      'PUT /api/topics/:id',
-      'DELETE /api/topics/:id',
-      'GET /api/topics/:id',
-      'POST /api/auth/*',
-      'GET /api/user/*'
-    ]
+    requested: `${req.method} ${req.originalUrl}`
   });
 });
 
@@ -130,15 +142,16 @@ app.use((err, req, res, next) => {
   });
 });
 
+// 🔥 ADDED: BẮT LỖI PROMISE TREO (QUAN TRỌNG)
+process.on('unhandledRejection', reason => {
+  console.error('🔥 UNHANDLED PROMISE:', reason);
+});
+
 // ====== START SERVER ======
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 Access URLs:`);
-  console.log(`   Local: http://localhost:${PORT}`);
-  console.log(`   Android Emulator: http://10.0.2.2:${PORT}`);
-  console.log(`\n📋 Test these URLs in browser:`);
-  console.log(`   1. http://localhost:${PORT}/api/health`);
-  console.log(`   2. http://localhost:${PORT}/api/test-connection`);
-  console.log(`   3. http://localhost:${PORT}/api/topics/progress`);
+  console.log(`🌐 Local: http://localhost:${PORT}`);
+  console.log(`📱 Android Emulator: http://10.0.2.2:${PORT}`);
 });

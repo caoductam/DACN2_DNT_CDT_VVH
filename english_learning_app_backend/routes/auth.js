@@ -1,41 +1,35 @@
-const router = require('express').Router();
 const admin = require('../config/firebase');
-const User = require('../models/User');
 
-// POST /api/auth/sync
-router.post('/sync', async (req, res) => {
-  const { idToken } = req.body;
-
-  if (!idToken) return res.status(400).json({ error: "No token provided" });
+const verifyToken = async (req, res, next) => {
+  console.log("🔐 VERIFY TOKEN");
 
   try {
-    // 1. Xác thực token với Firebase
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { uid, email, name, picture, firebase } = decodedToken;
-    const provider = firebase.sign_in_provider || 'password';
+    const authHeader = req.headers.authorization;
 
-    // 2. Tìm hoặc Tạo User trong MongoDB
-    let user = await User.findOne({ firebaseUid: uid });
-
-    if (user) {
-      // Đã có -> Trả về thông tin
-      return res.json(user);
-    } else {
-      // Chưa có -> Tạo mới
-      const newUser = new User({
-        firebaseUid: uid,
-        email: email,
-        fullName: name || email.split('@')[0],
-        photoUrl: picture || "",
-        authProvider: provider
-      });
-      await newUser.save();
-      return res.status(201).json(newUser);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ NO AUTH HEADER");
+      return res.status(401).json({ message: "Không tìm thấy Token" });
     }
-  } catch (error) {
-    console.error("Auth Error:", error);
-    res.status(401).json({ error: "Invalid Token" });
-  }
-});
 
-module.exports = router;
+    const token = authHeader.split(' ')[1];
+
+    // ⏱️ CHỐNG TREO FIREBASE
+    const decodedToken = await Promise.race([
+      admin.auth().verifyIdToken(token),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Firebase verify timeout")), 5000)
+      ),
+    ]);
+
+    req.user = decodedToken;
+    console.log("✅ TOKEN OK:", decodedToken.uid);
+    next();
+  } catch (error) {
+    console.error("❌ TOKEN ERROR:", error.message);
+    return res.status(401).json({
+      message: "Token không hợp lệ hoặc đã hết hạn",
+    });
+  }
+};
+
+module.exports = verifyToken;
