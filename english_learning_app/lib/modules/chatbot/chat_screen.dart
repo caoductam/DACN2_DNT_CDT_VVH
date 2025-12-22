@@ -13,7 +13,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   // --- CẤU HÌNH ---
   // Thay API Key của bạn vào đây
-  static const String _apiKey = 'AIzaSyClyq4U6CWEPlTmOXPilcgOY6naGhSYBQg';
+  static const String _apiKey = 'AIzaSyDZ5EmHTHnXCdVBHdvpKfZ7BKSdPwFiz7E';
 
   // Model Name: Sử dụng gemini-1.5-flash (bản 2.5 chưa khả dụng public)
   static const String _modelName = 'gemini-2.5-flash';

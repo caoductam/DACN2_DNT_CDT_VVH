@@ -259,7 +259,7 @@ class _VocabScreenState extends State<VocabScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Welcome back, Sarah!",
+            "Welcome back",
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
