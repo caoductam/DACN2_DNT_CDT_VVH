@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
           // 3. Chế độ hiện tại (Sáng hay Tối do ThemeManager quyết định)
           themeMode: currentMode,
 
-          initialRoute: AppRoutes.home,
+          initialRoute: AppRoutes.login,
 
           routes: {
             AppRoutes.onboarding: (context) => const OnboardingScreen(),
