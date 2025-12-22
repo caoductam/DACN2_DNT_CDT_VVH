@@ -16,7 +16,7 @@ class _ChatScreenState extends State<ChatScreen> {
   static const String _apiKey = 'AIzaSyClyq4U6CWEPlTmOXPilcgOY6naGhSYBQg';
 
   // Model Name: Sử dụng gemini-1.5-flash (bản 2.5 chưa khả dụng public)
-  static const String _modelName = 'gemini-1.5-flash';
+  static const String _modelName = 'gemini-2.5-flash';
 
   // Cấu hình User
   final ChatUser _currentUser = ChatUser(id: '1', firstName: 'User');
